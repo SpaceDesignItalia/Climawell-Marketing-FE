@@ -5,7 +5,7 @@ import ApartmentRoundedIcon from "@mui/icons-material/ApartmentRounded";
 import ContactsTablePrivate from "../../Components/Contacts/Table/ContactsTablePrivate";
 import ContactsTableCompany from "../../Components/Contacts/Table/ContactsTableCompany";
 import { Button } from "@heroui/react";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import axios from "axios";
 import Papa from "papaparse";
 
@@ -13,6 +13,7 @@ export default function Contacts() {
   const [isLoading, setIsLoading] = useState(false);
   const [totalContacts, setTotalContacts] = useState<number | null>(null);
   const [isPremium, setIsPremium] = useState<boolean>(false);
+  const [isWhatsappBlock, setIsWhatsappBlock] = useState<boolean>(false);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -28,6 +29,16 @@ export default function Contacts() {
       });
     }
   };
+
+  useEffect(() => {
+    async function checkWhatsappBlock() {
+      const res = await axios.get("/Campaigns/GET/CheckWhatsappBlock");
+      if (res.status === 200) {
+        setIsWhatsappBlock(res.data);
+      }
+    }
+    checkWhatsappBlock();
+  }, []);
 
   const processCSVData = (data: any[]) => {
     const uniqueData = Array.from(
@@ -119,7 +130,10 @@ export default function Contacts() {
                 </div>
               }
             >
-              <ContactsTablePrivate isPremium={isPremium} />
+              <ContactsTablePrivate
+                isPremium={isPremium}
+                isWhatsappBlock={isWhatsappBlock}
+              />
             </Tab>
             <Tab
               key="aziende"
@@ -129,32 +143,47 @@ export default function Contacts() {
                 </div>
               }
             >
-              <ContactsTableCompany isPremium={isPremium} />
+              <ContactsTableCompany
+                isPremium={isPremium}
+                isWhatsappBlock={isWhatsappBlock}
+              />
             </Tab>
-            <Tab
-              key="fornitori"
-              title={
-                <label htmlFor="file-upload">
-                  <div className="relative inline-block">
-                    <Button color="primary" disabled={isLoading}>
-                      {isLoading
-                        ? "Caricamento in corso..."
-                        : "Carica Contatti"}
-                    </Button>
-                    <input
-                      id="file-upload"
-                      type="file"
-                      accept=".csv"
-                      onChange={handleFileChange}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      disabled={isLoading}
-                    />
-                  </div>
-                </label>
-              }
-            >
-              <ContactsTableCompany isPremium={isPremium} />
-            </Tab>
+            {!isWhatsappBlock ? (
+              <Tab
+                key="fornitori"
+                title={
+                  <label htmlFor="file-upload">
+                    <div className="relative inline-block">
+                      <Button
+                        color="primary"
+                        disabled={isLoading || isWhatsappBlock}
+                      >
+                        {isLoading
+                          ? "Caricamento in corso..."
+                          : "Carica Contatti"}
+                      </Button>
+                      <input
+                        id="file-upload"
+                        type="file"
+                        accept=".csv"
+                        onChange={handleFileChange}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        disabled={isLoading || isWhatsappBlock}
+                      />
+                    </div>
+                  </label>
+                }
+              >
+                <ContactsTableCompany
+                  isPremium={isPremium}
+                  isWhatsappBlock={isWhatsappBlock}
+                />
+              </Tab>
+            ) : (
+              <Tab isDisabled>
+                <p>Limite di messaggi giornaliero raggiunto</p>
+              </Tab>
+            )}
           </Tabs>
           {totalContacts !== null && (
             <p className="mt-4 text-sm text-gray-500">

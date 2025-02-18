@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react";
 import {
   Table,
   TableHeader,
@@ -12,21 +12,21 @@ import {
   type SortDescriptor,
   Link,
   Spinner,
-} from "@heroui/react"
-import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined"
-import PersonAddAlt1RoundedIcon from "@mui/icons-material/PersonAddAlt1Rounded"
-import AddRoundedIcon from "@mui/icons-material/AddRounded"
-import { Edit } from "@mui/icons-material"
-import axios from "axios"
-import EditPrivateContactModal from "../Other/EditPrivateContactModal"
+} from "@heroui/react";
+import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
+import PersonAddAlt1RoundedIcon from "@mui/icons-material/PersonAddAlt1Rounded";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import { Edit } from "@mui/icons-material";
+import axios from "axios";
+import EditPrivateContactModal from "../Other/EditPrivateContactModal";
 
 interface Customer {
-  CustomerId: number
-  CustomerFullName: string
-  CustomerEmail?: string
-  CustomerPhone?: string
-  PolicyAccepted: boolean
-  Agente: string
+  CustomerId: number;
+  CustomerFullName: string;
+  CustomerEmail?: string;
+  CustomerPhone?: string;
+  PolicyAccepted: boolean;
+  Agente: string;
 }
 
 const columns = [
@@ -36,28 +36,32 @@ const columns = [
   { name: "Agente", uid: "Agente" },
   { name: "Cap", uid: "Cap" },
   { name: "Azioni", uid: "actions" },
-]
+];
 
 interface ContactsTablePrivateProps {
-  isPremium: boolean
+  isPremium: boolean;
+  isWhatsappBlock: boolean;
 }
 
-export default function ContactsTablePrivate({ isPremium }: ContactsTablePrivateProps) {
-  const [searchTerm, setSearchTerm] = useState<string>("")
-  const [contacts, setContacts] = useState<Customer[]>([])
-  const [rowsPerPage, setRowsPerPage] = useState(15)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSearching, setIsSearching] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+export default function ContactsTablePrivate({
+  isPremium,
+  isWhatsappBlock,
+}: ContactsTablePrivateProps) {
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [contacts, setContacts] = useState<Customer[]>([]);
+  const [rowsPerPage, setRowsPerPage] = useState(15);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSearching, setIsSearching] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: "age",
     direction: "ascending",
-  })
-  const [updateContact, setUpdateContact] = useState(false)
-  const [page, setPage] = useState(1)
+  });
+  const [updateContact, setUpdateContact] = useState(false);
+  const [page, setPage] = useState(1);
   const [modalData, setModalData] = useState<{
-    Customer: Customer
-    open: boolean
+    Customer: Customer;
+    open: boolean;
   }>({
     Customer: {
       CustomerId: 0,
@@ -68,97 +72,109 @@ export default function ContactsTablePrivate({ isPremium }: ContactsTablePrivate
       PolicyAccepted: false,
     },
     open: false,
-  })
+  });
 
   useEffect(() => {
-    setSearchTerm("")
-    fetchData()
-  }, [isPremium, updateContact])
+    setSearchTerm("");
+    fetchData();
+  }, [isPremium, updateContact]);
 
   async function fetchData() {
     try {
-      setIsLoading(true)
-      setError(null)
+      setIsLoading(true);
+      setError(null);
       const response = await axios.get("/Contacts/GET/GetAllPrivate", {
         params: { isPremium },
-      })
-      setContacts(response.data)
+      });
+      setContacts(response.data);
     } catch (error) {
-      console.error("Errore durante il caricamento dei contatti:", error)
-      setError("Si è verificato un errore durante il caricamento dei contatti")
+      console.error("Errore durante il caricamento dei contatti:", error);
+      setError("Si è verificato un errore durante il caricamento dei contatti");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
   async function SearchCustomer() {
     try {
-      setIsSearching(true)
-      setError(null)
-      const response = await axios.get("/Contacts/GET/SearchPrivateContactByEmail", {
-        params: { CustomerEmail: searchTerm, isPremium },
-      })
-      setContacts(response.data)
+      setIsSearching(true);
+      setError(null);
+      const response = await axios.get(
+        "/Contacts/GET/SearchPrivateContactByEmail",
+        {
+          params: { CustomerEmail: searchTerm, isPremium },
+        }
+      );
+      setContacts(response.data);
     } catch (error) {
-      console.error("Errore durante la ricerca dei contatti:", error)
-      setError("Si è verificato un errore durante la ricerca")
+      console.error("Errore durante la ricerca dei contatti:", error);
+      setError("Si è verificato un errore durante la ricerca");
     } finally {
-      setIsSearching(false)
+      setIsSearching(false);
     }
   }
 
-
-  const pages = Math.ceil(contacts.length / rowsPerPage)
+  const pages = Math.ceil(contacts.length / rowsPerPage);
 
   const items = React.useMemo(() => {
-    const start = (page - 1) * rowsPerPage
-    const end = start + rowsPerPage
-    return contacts.slice(start, end)
-  }, [page, contacts, rowsPerPage])
+    const start = (page - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    return contacts.slice(start, end);
+  }, [page, contacts, rowsPerPage]);
 
-  const renderCell = React.useCallback((customer: Customer, columnKey: React.Key) => {
-    const cellValue = customer[columnKey as keyof Customer]
+  const renderCell = React.useCallback(
+    (customer: Customer, columnKey: React.Key) => {
+      const cellValue = customer[columnKey as keyof Customer];
 
-    switch (columnKey) {
-      case "CustomerPhone":
-        return (
-          <div className="flex flex-col">
-            <p className="text-bold text-small capitalize">{cellValue == null ? "Non presente" : cellValue}</p>
-          </div>
-        )
-      case "actions":
-        return (
-          <div className="flex flex-row gap-3">
-            <Button
-              color="primary"
-              radius="lg"
-              startContent={<Edit className="h-3 w-3" />}
-              onClick={() => {
-                setModalData({
-                  Customer: customer,
-                  open: true,
-                })
-              }}
-              size="sm"
-              isIconOnly
-            />
-          </div>
-        )
-      case "PolicyAccepted":
-        return (
-          <div className="flex flex-col">
-            <p className="text-bold text-small capitalize">{cellValue ? "Accettata" : "Non accettata"}</p>
-          </div>
-        )
-      default:
-        return cellValue
-    }
-  }, [])
+      switch (columnKey) {
+        case "CustomerPhone":
+          return (
+            <div className="flex flex-col">
+              <p className="text-bold text-small capitalize">
+                {cellValue == null ? "Non presente" : cellValue}
+              </p>
+            </div>
+          );
+        case "actions":
+          return (
+            <div className="flex flex-row gap-3">
+              <Button
+                color="primary"
+                radius="lg"
+                startContent={<Edit className="h-3 w-3" />}
+                onClick={() => {
+                  setModalData({
+                    Customer: customer,
+                    open: true,
+                  });
+                }}
+                size="sm"
+                isIconOnly
+              />
+            </div>
+          );
+        case "PolicyAccepted":
+          return (
+            <div className="flex flex-col">
+              <p className="text-bold text-small capitalize">
+                {cellValue ? "Accettata" : "Non accettata"}
+              </p>
+            </div>
+          );
+        default:
+          return cellValue;
+      }
+    },
+    []
+  );
 
-  const onRowsPerPageChange = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    setRowsPerPage(Number(e.target.value))
-    setPage(1)
-  }, [])
+  const onRowsPerPageChange = React.useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setRowsPerPage(Number(e.target.value));
+      setPage(1);
+    },
+    []
+  );
 
   const topContent = React.useMemo(() => {
     return (
@@ -170,9 +186,9 @@ export default function ContactsTablePrivate({ isPremium }: ContactsTablePrivate
               variant="bordered"
               startContent={<SearchOutlinedIcon className="text-gray-400" />}
               onChange={(e) => {
-                setSearchTerm(e.target.value)
+                setSearchTerm(e.target.value);
                 if (e.target.value.trim() === "") {
-                  fetchData()
+                  fetchData();
                 }
               }}
               value={searchTerm}
@@ -183,7 +199,9 @@ export default function ContactsTablePrivate({ isPremium }: ContactsTablePrivate
             <Button
               color="primary"
               radius="full"
-              endContent={isSearching ? <Spinner size="sm" /> : <SearchOutlinedIcon />}
+              endContent={
+                isSearching ? <Spinner size="sm" /> : <SearchOutlinedIcon />
+              }
               isDisabled={searchTerm === "" || isLoading || isSearching}
               onClick={SearchCustomer}
               className="hidden sm:flex"
@@ -208,8 +226,12 @@ export default function ContactsTablePrivate({ isPremium }: ContactsTablePrivate
               color="primary"
               radius="full"
               startContent={<PersonAddAlt1RoundedIcon />}
-              className="hidden sm:flex"
-              isDisabled={isLoading}
+              className={
+                isWhatsappBlock
+                  ? "hidden sm:flex bg-gray-400 cursor-not-allowed"
+                  : "hidden sm:flex"
+              }
+              isDisabled={isLoading || isWhatsappBlock}
             >
               Aggiungi privato
             </Button>
@@ -219,16 +241,26 @@ export default function ContactsTablePrivate({ isPremium }: ContactsTablePrivate
               color="primary"
               radius="full"
               isIconOnly
-              className="sm:hidden"
-              isDisabled={isLoading}
+              className={
+                isWhatsappBlock
+                  ? "sm:hidden bg-gray-400 cursor-not-allowed"
+                  : "sm:hidden"
+              }
+              isDisabled={isLoading || isWhatsappBlock}
             >
               <PersonAddAlt1RoundedIcon />
             </Button>
           </div>
         </div>
       </div>
-    )
-  }, [onRowsPerPageChange, contacts.length, searchTerm, isLoading, isSearching])
+    );
+  }, [
+    onRowsPerPageChange,
+    contacts.length,
+    searchTerm,
+    isLoading,
+    isSearching,
+  ]);
 
   const bottomContent = React.useMemo(() => {
     return (
@@ -246,20 +278,22 @@ export default function ContactsTablePrivate({ isPremium }: ContactsTablePrivate
           isDisabled={isLoading}
         />
       </div>
-    )
-  }, [items.length, page, pages, isLoading])
+    );
+  }, [items.length, page, pages, isLoading]);
 
   const loadingContent = (
     <div className="flex flex-col items-center justify-center p-10 gap-4">
       <Spinner size="lg" />
       <p className="text-sm text-gray-500">Caricamento contatti in corso...</p>
     </div>
-  )
+  );
 
   const errorContent = error && (
     <div className="text-center p-10">
       <PersonAddAlt1RoundedIcon sx={{ fontSize: 50, color: "red" }} />
-      <h3 className="mt-2 text-sm font-semibold text-gray-900">Si è verificato un errore</h3>
+      <h3 className="mt-2 text-sm font-semibold text-gray-900">
+        Si è verificato un errore
+      </h3>
       <p className="mt-1 text-sm text-red-500">{error}</p>
       <div className="mt-6">
         <Button
@@ -273,7 +307,7 @@ export default function ContactsTablePrivate({ isPremium }: ContactsTablePrivate
         </Button>
       </div>
     </div>
-  )
+  );
 
   return (
     <div className="bg-white">
@@ -299,7 +333,10 @@ export default function ContactsTablePrivate({ isPremium }: ContactsTablePrivate
       >
         <TableHeader columns={columns}>
           {(column) => (
-            <TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"}>
+            <TableColumn
+              key={column.uid}
+              align={column.uid === "actions" ? "center" : "start"}
+            >
               {column.name}
             </TableColumn>
           )}
@@ -313,8 +350,12 @@ export default function ContactsTablePrivate({ isPremium }: ContactsTablePrivate
             ) : searchTerm === "" ? (
               <div className="text-center p-10">
                 <PersonAddAlt1RoundedIcon sx={{ fontSize: 50 }} />
-                <h3 className="mt-2 text-sm font-semibold text-gray-900">Nessun privato trovato!</h3>
-                <p className="mt-1 text-sm text-gray-500">Inizia aggiungendo un nuovo privato al database.</p>
+                <h3 className="mt-2 text-sm font-semibold text-gray-900">
+                  Nessun privato trovato!
+                </h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Inizia aggiungendo un nuovo privato al database.
+                </p>
                 <div className="mt-6">
                   <Button
                     as={Link}
@@ -322,6 +363,10 @@ export default function ContactsTablePrivate({ isPremium }: ContactsTablePrivate
                     radius="full"
                     href="./contacts/add-new-contact"
                     startContent={<AddRoundedIcon />}
+                    isDisabled={isWhatsappBlock}
+                    className={
+                      isWhatsappBlock ? "bg-gray-400 cursor-not-allowed" : ""
+                    }
                   >
                     Aggiungi privato
                   </Button>
@@ -330,7 +375,9 @@ export default function ContactsTablePrivate({ isPremium }: ContactsTablePrivate
             ) : (
               <div className="text-center p-10">
                 <PersonAddAlt1RoundedIcon sx={{ fontSize: 50 }} />
-                <h3 className="mt-2 text-sm font-semibold text-gray-900">Nessun cliente trovato!</h3>
+                <h3 className="mt-2 text-sm font-semibold text-gray-900">
+                  Nessun cliente trovato!
+                </h3>
                 <p className="mt-1 text-sm text-gray-500">
                   Nessun risultato corrisponde alla tua ricerca:{" "}
                   <span className="font-semibold italic">{searchTerm}</span>
@@ -342,12 +389,13 @@ export default function ContactsTablePrivate({ isPremium }: ContactsTablePrivate
         >
           {(item) => (
             <TableRow key={item.CustomerId}>
-              {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
+              {(columnKey) => (
+                <TableCell>{renderCell(item, columnKey)}</TableCell>
+              )}
             </TableRow>
           )}
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }
-

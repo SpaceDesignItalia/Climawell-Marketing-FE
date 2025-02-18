@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react";
 import {
   Table,
   TableHeader,
@@ -8,25 +8,24 @@ import {
   TableCell,
   Input,
   Button,
- 
   Pagination,
   Link,
   Spinner,
-} from "@heroui/react"
-import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined"
-import ApartmentRoundedIcon from "@mui/icons-material/ApartmentRounded"
-import AddBusinessIcon from "@mui/icons-material/AddBusiness"
-import AddRoundedIcon from "@mui/icons-material/AddRounded"
-import { Edit } from "@mui/icons-material"
-import axios from "axios"
-import EditCompanyContactModal from "../Other/EditCompanyContactModal"
+} from "@heroui/react";
+import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
+import ApartmentRoundedIcon from "@mui/icons-material/ApartmentRounded";
+import AddBusinessIcon from "@mui/icons-material/AddBusiness";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import { Edit } from "@mui/icons-material";
+import axios from "axios";
+import EditCompanyContactModal from "../Other/EditCompanyContactModal";
 
 interface Company {
-  CompanyId: number
-  CompanyName: string
-  CompanyEmail?: string
-  CompanyPhone?: string
-  Agente: string
+  CompanyId: number;
+  CompanyName: string;
+  CompanyEmail?: string;
+  CompanyPhone?: string;
+  Agente: string;
 }
 
 const columns = [
@@ -36,24 +35,28 @@ const columns = [
   { name: "Agente", uid: "Agente" },
   { name: "Cap", uid: "Cap" },
   { name: "Azioni", uid: "actions" },
-]
+];
 
 interface ContactsTableCompanyProps {
-  isPremium: boolean
+  isPremium: boolean;
+  isWhatsappBlock: boolean;
 }
 
-export default function ContactsTableCompany({ isPremium }: ContactsTableCompanyProps) {
-  const [searchTerm, setSearchTerm] = useState<string>("")
-  const [companies, setCompany] = useState<Company[]>([])
-  const [rowsPerPage, setRowsPerPage] = useState(15)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSearching, setIsSearching] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [updateContact, setUpdateContact] = useState(false)
-  const [page, setPage] = useState(1)
+export default function ContactsTableCompany({
+  isPremium,
+  isWhatsappBlock,
+}: ContactsTableCompanyProps) {
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [companies, setCompany] = useState<Company[]>([]);
+  const [rowsPerPage, setRowsPerPage] = useState(15);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSearching, setIsSearching] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [updateContact, setUpdateContact] = useState(false);
+  const [page, setPage] = useState(1);
   const [modalData, setModalData] = useState<{
-    Customer: Company
-    open: boolean
+    Customer: Company;
+    open: boolean;
   }>({
     Customer: {
       CompanyId: 0,
@@ -63,69 +66,74 @@ export default function ContactsTableCompany({ isPremium }: ContactsTableCompany
       Agente: "",
     },
     open: false,
-  })
+  });
 
   useEffect(() => {
-    setSearchTerm("")
-    fetchData()
-  }, [isPremium, updateContact])
+    setSearchTerm("");
+    fetchData();
+  }, [isPremium, updateContact]);
 
   async function fetchData() {
     try {
-      setIsLoading(true)
-      setError(null)
+      setIsLoading(true);
+      setError(null);
       const res = await axios.get("/Contacts/GET/GetAllCompany", {
         params: { isPremium: isPremium || false },
-      })
+      });
 
       if (res.status === 200) {
-        setCompany(res.data)
+        setCompany(res.data);
       }
     } catch (error) {
-      console.error("Errore durante il caricamento delle aziende:", error)
-      setError("Si è verificato un errore durante il caricamento delle aziende")
+      console.error("Errore durante il caricamento delle aziende:", error);
+      setError(
+        "Si è verificato un errore durante il caricamento delle aziende"
+      );
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
   async function SearchCustomer() {
     try {
-      setIsSearching(true)
-      setError(null)
-      const response = await axios.get("/Contacts/GET/SearchCompanyContactByEmail", {
-        params: { CustomerEmail: searchTerm, isPremium },
-      })
-      setCompany(response.data)
+      setIsSearching(true);
+      setError(null);
+      const response = await axios.get(
+        "/Contacts/GET/SearchCompanyContactByEmail",
+        {
+          params: { CustomerEmail: searchTerm, isPremium },
+        }
+      );
+      setCompany(response.data);
     } catch (error) {
-      console.error("Errore durante la ricerca delle aziende:", error)
-      setError("Si è verificato un errore durante la ricerca")
+      console.error("Errore durante la ricerca delle aziende:", error);
+      setError("Si è verificato un errore durante la ricerca");
     } finally {
-      setIsSearching(false)
+      setIsSearching(false);
     }
   }
 
-  
-
-  const pages = Math.ceil(companies.length / rowsPerPage)
+  const pages = Math.ceil(companies.length / rowsPerPage);
 
   const items = React.useMemo(() => {
-    const start = (page - 1) * rowsPerPage
-    const end = start + rowsPerPage
-    return companies.slice(start, end)
-  }, [page, companies, rowsPerPage])
+    const start = (page - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    return companies.slice(start, end);
+  }, [page, companies, rowsPerPage]);
 
   const renderCell = React.useCallback(
     (customer: Company, columnKey: React.Key) => {
-      const cellValue = customer[columnKey as keyof Company]
+      const cellValue = customer[columnKey as keyof Company];
 
       switch (columnKey) {
         case "CompanyPhone":
           return (
             <div className="flex flex-col">
-              <p className="text-bold text-small capitalize">{cellValue == null ? "Non presente" : cellValue}</p>
+              <p className="text-bold text-small capitalize">
+                {cellValue == null ? "Non presente" : cellValue}
+              </p>
             </div>
-          )
+          );
         case "actions":
           return (
             <div className="flex flex-row gap-3">
@@ -137,25 +145,28 @@ export default function ContactsTableCompany({ isPremium }: ContactsTableCompany
                   setModalData({
                     Customer: customer,
                     open: true,
-                  })
+                  });
                 }}
                 size="sm"
                 isIconOnly
                 isDisabled={isLoading}
               />
             </div>
-          )
+          );
         default:
-          return cellValue
+          return cellValue;
       }
     },
-    [isLoading],
-  )
+    [isLoading]
+  );
 
-  const onRowsPerPageChange = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    setRowsPerPage(Number(e.target.value))
-    setPage(1)
-  }, [])
+  const onRowsPerPageChange = React.useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setRowsPerPage(Number(e.target.value));
+      setPage(1);
+    },
+    []
+  );
 
   const topContent = React.useMemo(() => {
     return (
@@ -167,9 +178,9 @@ export default function ContactsTableCompany({ isPremium }: ContactsTableCompany
               variant="bordered"
               startContent={<SearchOutlinedIcon className="text-gray-400" />}
               onChange={(e) => {
-                setSearchTerm(e.target.value)
+                setSearchTerm(e.target.value);
                 if (e.target.value.trim() === "") {
-                  fetchData()
+                  fetchData();
                 }
               }}
               value={searchTerm}
@@ -180,7 +191,9 @@ export default function ContactsTableCompany({ isPremium }: ContactsTableCompany
             <Button
               color="primary"
               radius="full"
-              endContent={isSearching ? <Spinner size="sm" /> : <SearchOutlinedIcon />}
+              endContent={
+                isSearching ? <Spinner size="sm" /> : <SearchOutlinedIcon />
+              }
               isDisabled={searchTerm === "" || isLoading || isSearching}
               onClick={SearchCustomer}
               className="hidden sm:flex"
@@ -205,8 +218,12 @@ export default function ContactsTableCompany({ isPremium }: ContactsTableCompany
               color="primary"
               radius="full"
               startContent={<AddBusinessIcon />}
-              className="hidden sm:flex"
-              isDisabled={isLoading}
+              className={
+                isWhatsappBlock
+                  ? "hidden sm:flex bg-gray-400 cursor-not-allowed"
+                  : "hidden sm:flex"
+              }
+              isDisabled={isLoading || isWhatsappBlock}
             >
               Aggiungi contatto
             </Button>
@@ -216,16 +233,26 @@ export default function ContactsTableCompany({ isPremium }: ContactsTableCompany
               color="primary"
               radius="full"
               isIconOnly
-              className="sm:hidden"
-              isDisabled={isLoading}
+              className={
+                isWhatsappBlock
+                  ? "sm:hidden bg-gray-400 cursor-not-allowed"
+                  : "sm:hidden"
+              }
+              isDisabled={isLoading || isWhatsappBlock}
             >
               <AddBusinessIcon />
             </Button>
           </div>
         </div>
       </div>
-    )
-  }, [onRowsPerPageChange, companies.length, searchTerm, isLoading, isSearching])
+    );
+  }, [
+    onRowsPerPageChange,
+    companies.length,
+    searchTerm,
+    isLoading,
+    isSearching,
+  ]);
 
   const bottomContent = React.useMemo(() => {
     return (
@@ -243,20 +270,22 @@ export default function ContactsTableCompany({ isPremium }: ContactsTableCompany
           isDisabled={isLoading}
         />
       </div>
-    )
-  }, [items.length, page, pages, isLoading])
+    );
+  }, [items.length, page, pages, isLoading]);
 
   const loadingContent = (
     <div className="flex flex-col items-center justify-center p-10 gap-4">
       <Spinner size="lg" />
       <p className="text-sm text-gray-500">Caricamento aziende in corso...</p>
     </div>
-  )
+  );
 
   const errorContent = error && (
     <div className="text-center p-10">
       <ApartmentRoundedIcon sx={{ fontSize: 50, color: "red" }} />
-      <h3 className="mt-2 text-sm font-semibold text-gray-900">Si è verificato un errore</h3>
+      <h3 className="mt-2 text-sm font-semibold text-gray-900">
+        Si è verificato un errore
+      </h3>
       <p className="mt-1 text-sm text-red-500">{error}</p>
       <div className="mt-6">
         <Button
@@ -270,7 +299,7 @@ export default function ContactsTableCompany({ isPremium }: ContactsTableCompany
         </Button>
       </div>
     </div>
-  )
+  );
 
   return (
     <div className="bg-white">
@@ -294,7 +323,10 @@ export default function ContactsTableCompany({ isPremium }: ContactsTableCompany
       >
         <TableHeader columns={columns}>
           {(column) => (
-            <TableColumn key={column.uid} align={column.uid === "actions" ? "center" : "start"}>
+            <TableColumn
+              key={column.uid}
+              align={column.uid === "actions" ? "center" : "start"}
+            >
               {column.name}
             </TableColumn>
           )}
@@ -308,8 +340,12 @@ export default function ContactsTableCompany({ isPremium }: ContactsTableCompany
             ) : searchTerm === "" ? (
               <div className="text-center p-10">
                 <ApartmentRoundedIcon sx={{ fontSize: 50 }} />
-                <h3 className="mt-2 text-sm font-semibold text-gray-900">Nessun azienda trovata!</h3>
-                <p className="mt-1 text-sm text-gray-500">Inizia aggiungendo una nuova azienda al database.</p>
+                <h3 className="mt-2 text-sm font-semibold text-gray-900">
+                  Nessun azienda trovata!
+                </h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Inizia aggiungendo una nuova azienda al database.
+                </p>
                 <div className="mt-6">
                   <Button
                     as={Link}
@@ -317,6 +353,10 @@ export default function ContactsTableCompany({ isPremium }: ContactsTableCompany
                     color="primary"
                     radius="full"
                     startContent={<AddRoundedIcon />}
+                    isDisabled={isWhatsappBlock}
+                    className={
+                      isWhatsappBlock ? "bg-gray-400 cursor-not-allowed" : ""
+                    }
                   >
                     Aggiungi contatto
                   </Button>
@@ -325,7 +365,9 @@ export default function ContactsTableCompany({ isPremium }: ContactsTableCompany
             ) : (
               <div className="text-center p-10">
                 <ApartmentRoundedIcon sx={{ fontSize: 50 }} />
-                <h3 className="mt-2 text-sm font-semibold text-gray-900">Nessun contatto trovato!</h3>
+                <h3 className="mt-2 text-sm font-semibold text-gray-900">
+                  Nessun contatto trovato!
+                </h3>
                 <p className="mt-1 text-sm text-gray-500">
                   Nessun risultato corrisponde alla tua ricerca:{" "}
                   <span className="font-semibold italic">{searchTerm}</span>
@@ -337,12 +379,13 @@ export default function ContactsTableCompany({ isPremium }: ContactsTableCompany
         >
           {(item) => (
             <TableRow key={item.CompanyId}>
-              {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}
+              {(columnKey) => (
+                <TableCell>{renderCell(item, columnKey)}</TableCell>
+              )}
             </TableRow>
           )}
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }
-
