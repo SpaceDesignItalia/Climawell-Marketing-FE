@@ -13,7 +13,7 @@ export default function Contacts() {
   const [isLoading, setIsLoading] = useState(false);
   const [totalContacts, setTotalContacts] = useState<number | null>(null);
   const [isPremium, setIsPremium] = useState<boolean>(false);
-  const [isWhatsappBlock, setIsWhatsappBlock] = useState<boolean>(false);
+  const [isWhatsappBlock, setIsWhatsappBlock] = useState({ blocked: false });
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -132,7 +132,7 @@ export default function Contacts() {
             >
               <ContactsTablePrivate
                 isPremium={isPremium}
-                isWhatsappBlock={isWhatsappBlock}
+                isWhatsappBlock={isWhatsappBlock.blocked}
               />
             </Tab>
             <Tab
@@ -145,10 +145,10 @@ export default function Contacts() {
             >
               <ContactsTableCompany
                 isPremium={isPremium}
-                isWhatsappBlock={isWhatsappBlock}
+                isWhatsappBlock={isWhatsappBlock.blocked}
               />
             </Tab>
-            {!isWhatsappBlock ? (
+            {!isWhatsappBlock.blocked ? (
               <Tab
                 key="fornitori"
                 title={
@@ -156,7 +156,7 @@ export default function Contacts() {
                     <div className="relative inline-block">
                       <Button
                         color="primary"
-                        disabled={isLoading || isWhatsappBlock}
+                        disabled={isLoading || isWhatsappBlock.blocked}
                       >
                         {isLoading
                           ? "Caricamento in corso..."
@@ -168,7 +168,7 @@ export default function Contacts() {
                         accept=".csv"
                         onChange={handleFileChange}
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        disabled={isLoading || isWhatsappBlock}
+                        disabled={isLoading || isWhatsappBlock.blocked}
                       />
                     </div>
                   </label>
@@ -176,7 +176,7 @@ export default function Contacts() {
               >
                 <ContactsTableCompany
                   isPremium={isPremium}
-                  isWhatsappBlock={isWhatsappBlock}
+                  isWhatsappBlock={isWhatsappBlock.blocked}
                 />
               </Tab>
             ) : (
