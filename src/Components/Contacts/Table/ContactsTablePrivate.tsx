@@ -19,6 +19,7 @@ import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import { Edit } from "@mui/icons-material";
 import axios from "axios";
 import EditPrivateContactModal from "../Other/EditPrivateContactModal";
+import { contacts as agentList } from "../../Campaigns/Other/utils/constants";
 
 interface Customer {
   CustomerId: number;
@@ -27,6 +28,7 @@ interface Customer {
   CustomerPhone?: string;
   PolicyAccepted: boolean;
   Agente: string;
+  Cap?: string;
 }
 
 const columns = [
@@ -48,6 +50,7 @@ export default function ContactsTablePrivate({
   isWhatsappBlock,
 }: ContactsTablePrivateProps) {
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [searchType, setSearchType] = useState<"email" | "agent">("email");
   const [contacts, setContacts] = useState<Customer[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [isLoading, setIsLoading] = useState(true);
@@ -70,6 +73,7 @@ export default function ContactsTablePrivate({
       CustomerPhone: "",
       Agente: "",
       PolicyAccepted: false,
+ 
     },
     open: false,
   });
@@ -86,6 +90,7 @@ export default function ContactsTablePrivate({
       const response = await axios.get("/Contacts/GET/GetAllPrivate", {
         params: { isPremium },
       });
+      console.log("Risposta API:", response.data);
       setContacts(response.data);
     } catch (error) {
       console.error("Errore durante il caricamento dei contatti:", error);
@@ -99,13 +104,23 @@ export default function ContactsTablePrivate({
     try {
       setIsSearching(true);
       setError(null);
-      const response = await axios.get(
-        "/Contacts/GET/SearchPrivateContactByEmail",
-        {
-          params: { CustomerEmail: searchTerm, isPremium },
-        }
-      );
-      setContacts(response.data);
+      
+      if (searchType === "email") {
+        const response = await axios.get("/Contacts/GET/SearchPrivateContactByEmail", {
+          params: { CustomerEmail: searchTerm, isPremium }
+        });
+        console.log("Risultato ricerca per email:", response.data);
+        setContacts(response.data);
+      } else {
+        const response = await axios.get("/Contacts/GET/GetAllPrivate", {
+          params: { isPremium }
+        });
+        const filteredContacts = response.data.filter((contact: Customer) => 
+          contact.Agente.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        console.log("Risultato ricerca per agente:", filteredContacts);
+        setContacts(filteredContacts);
+      }
     } catch (error) {
       console.error("Errore durante la ricerca dei contatti:", error);
       setError("Si è verificato un errore durante la ricerca");
@@ -113,6 +128,11 @@ export default function ContactsTablePrivate({
       setIsSearching(false);
     }
   }
+
+  const getAgentName = (agentCode: string) => {
+    const agent = agentList.find(a => a.code === agentCode);
+    return agent ? agent.name : agentCode;
+  };
 
   const pages = Math.ceil(contacts.length / rowsPerPage);
 
@@ -132,6 +152,19 @@ export default function ContactsTablePrivate({
             <div className="flex flex-col">
               <p className="text-bold text-small capitalize">
                 {cellValue == null ? "Non presente" : cellValue}
+              </p>
+            </div>
+          );
+        case "Agente":
+          return (
+            <div className="flex flex-col">
+              <p className="text-bold text-small capitalize">
+                {getAgentName(customer.Agente)}
+                {customer.Agente && (
+                  <span className="text-gray-400 text-xs ml-1">
+                    (#{customer.Agente})
+                  </span>
+                )}
               </p>
             </div>
           );
@@ -181,21 +214,31 @@ export default function ContactsTablePrivate({
       <div className="flex flex-col gap-4">
         <div className="flex flex-row justify-between gap-3 items-end">
           <div className="flex flex-row gap-3 w-full">
-            <Input
-              radius="full"
-              variant="bordered"
-              startContent={<SearchOutlinedIcon className="text-gray-400" />}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                if (e.target.value.trim() === "") {
-                  fetchData();
-                }
-              }}
-              value={searchTerm}
-              className="md:w-1/3"
-              placeholder="Cerca cliente per email..."
-              disabled={isLoading}
-            />
+            <div className="flex flex-row gap-2 md:w-1/3">
+              <Input
+                radius="full"
+                variant="bordered"
+                startContent={<SearchOutlinedIcon className="text-gray-400" />}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  if (e.target.value.trim() === "") {
+                    fetchData();
+                  }
+                }}
+                value={searchTerm}
+                className="w-full"
+                placeholder={searchType === "email" ? "Cerca cliente per email..." : "Cerca cliente per codice agente..."}
+                disabled={isLoading}
+              />
+              <Button
+                radius="full"
+                variant="flat"
+                onClick={() => setSearchType(searchType === "email" ? "agent" : "email")}
+                className="min-w-[120px]"
+              >
+                {searchType === "email" ? "Per Email" : "Per Agente"}
+              </Button>
+            </div>
             <Button
               color="primary"
               radius="full"
@@ -260,6 +303,7 @@ export default function ContactsTablePrivate({
     searchTerm,
     isLoading,
     isSearching,
+    searchType,
   ]);
 
   const bottomContent = React.useMemo(() => {
@@ -381,6 +425,7 @@ export default function ContactsTablePrivate({
                 <p className="mt-1 text-sm text-gray-500">
                   Nessun risultato corrisponde alla tua ricerca:{" "}
                   <span className="font-semibold italic">{searchTerm}</span>
+                  {searchType === "agent" && " (codice agente)"}
                 </p>
               </div>
             )

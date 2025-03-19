@@ -159,6 +159,7 @@ export default function AddContactModel() {
           onContactsSelect={setSelectedContacts}
           selectedCaps={selectedCaps}
           selectedContacts={selectedContacts}
+          customerType={customerType}
         />
 
         {campaignType === "email" && (

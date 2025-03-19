@@ -177,14 +177,18 @@ export function ContactSelector({
       
       let response;
       
+      // Determina se è premium in base al tipo di cliente
+      const isPremium = customerType === "premium";
+      
       // Carica i contatti in base al tipo di cliente selezionato
       if (customerType === "business") {
         // Per i clienti aziendali
-        console.log("ContactSelector - Caricamento contatti aziendali...");
-        response = await axios.get("/Contacts/GET/GetAllCompany");
+        console.log(`ContactSelector - Caricamento contatti aziendali${isPremium ? ' premium' : ''}...`);
+        response = await axios.get("/Contacts/GET/GetAllCompany", {
+          params: { isPremium } // Aggiungo isPremium per le aziende
+        });
       } else {
         // Per i clienti privati o premium
-        const isPremium = customerType === "premium";
         console.log(`ContactSelector - Caricamento contatti ${isPremium ? 'premium' : 'privati'}...`);
         response = await axios.get("/Contacts/GET/GetAllPrivate", {
           params: { isPremium },

@@ -19,6 +19,7 @@ import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import { Edit } from "@mui/icons-material";
 import axios from "axios";
 import EditCompanyContactModal from "../Other/EditCompanyContactModal";
+import { contacts as agentList } from "../../Campaigns/Other/utils/constants";
 
 interface Company {
   CompanyId: number;
@@ -26,6 +27,7 @@ interface Company {
   CompanyEmail?: string;
   CompanyPhone?: string;
   Agente: string;
+  Cap?: string;
 }
 
 const columns = [
@@ -47,6 +49,7 @@ export default function ContactsTableCompany({
   isWhatsappBlock,
 }: ContactsTableCompanyProps) {
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [searchType, setSearchType] = useState<"email" | "agent">("email");
   const [companies, setCompany] = useState<Company[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [isLoading, setIsLoading] = useState(true);
@@ -82,6 +85,7 @@ export default function ContactsTableCompany({
       });
 
       if (res.status === 200) {
+        console.log("Dati aziende caricati:", res.data);
         setCompany(res.data);
       }
     } catch (error) {
@@ -98,13 +102,28 @@ export default function ContactsTableCompany({
     try {
       setIsSearching(true);
       setError(null);
-      const response = await axios.get(
-        "/Contacts/GET/SearchCompanyContactByEmail",
-        {
-          params: { CustomerEmail: searchTerm, isPremium },
-        }
-      );
-      setCompany(response.data);
+      
+      if (searchType === "email") {
+        const response = await axios.get(
+          "/Contacts/GET/SearchCompanyContactByEmail",
+          {
+            params: { CustomerEmail: searchTerm, isPremium },
+          }
+        );
+        console.log("Risultato ricerca per email:", response.data);
+        setCompany(response.data);
+      } else {
+        const response = await axios.get("/Contacts/GET/GetAllCompany", {
+          params: { isPremium }
+        });
+        
+        const filteredCompanies = response.data.filter((company: Company) => 
+          company.Agente.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        
+        console.log("Risultato ricerca per agente:", filteredCompanies);
+        setCompany(filteredCompanies);
+      }
     } catch (error) {
       console.error("Errore durante la ricerca delle aziende:", error);
       setError("Si è verificato un errore durante la ricerca");
@@ -112,6 +131,11 @@ export default function ContactsTableCompany({
       setIsSearching(false);
     }
   }
+
+  const getAgentName = (agentCode: string) => {
+    const agent = agentList.find(a => a.code === agentCode);
+    return agent ? agent.name : agentCode;
+  };
 
   const pages = Math.ceil(companies.length / rowsPerPage);
 
@@ -131,6 +155,19 @@ export default function ContactsTableCompany({
             <div className="flex flex-col">
               <p className="text-bold text-small capitalize">
                 {cellValue == null ? "Non presente" : cellValue}
+              </p>
+            </div>
+          );
+        case "Agente":
+          return (
+            <div className="flex flex-col">
+              <p className="text-bold text-small capitalize">
+                {getAgentName(customer.Agente)}
+                {customer.Agente && (
+                  <span className="text-gray-400 text-xs ml-1">
+                    (#{customer.Agente})
+                  </span>
+                )}
               </p>
             </div>
           );
@@ -157,7 +194,7 @@ export default function ContactsTableCompany({
           return cellValue;
       }
     },
-    [isLoading]
+    []
   );
 
   const onRowsPerPageChange = React.useCallback(
@@ -173,21 +210,31 @@ export default function ContactsTableCompany({
       <div className="flex flex-col gap-4">
         <div className="flex flex-row justify-between gap-3 items-end">
           <div className="flex flex-row gap-3 w-full">
-            <Input
-              radius="full"
-              variant="bordered"
-              startContent={<SearchOutlinedIcon className="text-gray-400" />}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                if (e.target.value.trim() === "") {
-                  fetchData();
-                }
-              }}
-              value={searchTerm}
-              className="md:w-1/3"
-              placeholder="Cerca contatto per nome..."
-              disabled={isLoading}
-            />
+            <div className="flex flex-row gap-2 md:w-1/3">
+              <Input
+                radius="full"
+                variant="bordered"
+                startContent={<SearchOutlinedIcon className="text-gray-400" />}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  if (e.target.value.trim() === "") {
+                    fetchData();
+                  }
+                }}
+                value={searchTerm}
+                className="w-full"
+                placeholder={searchType === "email" ? "Cerca azienda per email..." : "Cerca azienda per codice agente..."}
+                disabled={isLoading}
+              />
+              <Button
+                radius="full"
+                variant="flat"
+                onClick={() => setSearchType(searchType === "email" ? "agent" : "email")}
+                className="min-w-[120px]"
+              >
+                {searchType === "email" ? "Per Email" : "Per Agente"}
+              </Button>
+            </div>
             <Button
               color="primary"
               radius="full"
@@ -252,6 +299,7 @@ export default function ContactsTableCompany({
     searchTerm,
     isLoading,
     isSearching,
+    searchType
   ]);
 
   const bottomContent = React.useMemo(() => {
@@ -371,6 +419,7 @@ export default function ContactsTableCompany({
                 <p className="mt-1 text-sm text-gray-500">
                   Nessun risultato corrisponde alla tua ricerca:{" "}
                   <span className="font-semibold italic">{searchTerm}</span>
+                  {searchType === "agent" && " (codice agente)"}
                 </p>
               </div>
             )

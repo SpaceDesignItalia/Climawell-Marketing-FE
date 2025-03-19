@@ -27,7 +27,9 @@ export const contacts: Contact[] = [
   { code: "10766", name: "Chiara Semprepiovi" },
   { code: "2346", name: "Letizia Depalma" },
   { code: "6366", name: "Maria Vittoria Pontrelli" },
-  { code: "31083", name: "Ilaria Cellai" }
+  { code: "31083", name: "Ilaria Cellai" },
+  { code: "10803", name: "Diletta Pontrelli" }
+
 ];
 
 
