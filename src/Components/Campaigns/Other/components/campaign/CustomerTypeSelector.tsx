@@ -1,3 +1,4 @@
+import React from "react";
 import { RadioGroup } from "@heroui/react";
 import { CustomRadio } from "./CustomRadio";
 
@@ -7,6 +8,13 @@ interface CustomerTypeSelectorProps {
 }
 
 export function CustomerTypeSelector({ value, onChange }: CustomerTypeSelectorProps) {
+  console.log("CustomerTypeSelector rendering, current value:", value);
+  
+  const handleChange = (newValue: string) => {
+    console.log("CustomerTypeSelector - Cambio selezione a:", newValue);
+    onChange(newValue);
+  };
+  
   return (
     <div className="flex flex-col gap-5 sm:col-span-4">
       <div>
@@ -24,7 +32,7 @@ export function CustomerTypeSelector({ value, onChange }: CustomerTypeSelectorPr
         orientation="horizontal"
         description="Seleziona il tipo di cliente"
         value={value}
-        onValueChange={onChange}
+        onValueChange={handleChange}
       >
         <CustomRadio
           description="Seleziona questa opzione per inviare la campagna ai clienti privati."
@@ -43,7 +51,7 @@ export function CustomerTypeSelector({ value, onChange }: CustomerTypeSelectorPr
           </span>
         </CustomRadio>
         <CustomRadio
-          description="Seleziona questa opzione per inviare la campagna alle aziende."
+          description="Seleziona questa opzione per inviare la campagna ai clienti premium."
           value="premium"
         >
           <span className="flex items-center gap-2">
