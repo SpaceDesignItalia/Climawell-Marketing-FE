@@ -19,26 +19,6 @@ import { CampaignForm } from "./components/campaign/CampaignForm";
 import { ConfirmationModal } from "./components/campaign/ConfirmationModal";
 import { PreviewMailModal, PreviewWhatsAppModal } from "./preview-components";
 
-interface Employee {
-  EmployeeId: number;
-  StafferName: string;
-  StafferSurname: string;
-  EmployeeEmail: string;
-  EmployeePhone: string;
-  StafferImageUrl: string;
-  Agente: string;
-}
-
-const USERDATA_VALUE: Employee = {
-  EmployeeId: 0,
-  StafferName: "",
-  StafferSurname: "",
-  EmployeeEmail: "",
-  EmployeePhone: "",
-  StafferImageUrl: "",
-  Agente: "",
-};
-
 export default function AddContactModel() {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [customerType, setCustomerType] = useState("private");
@@ -56,7 +36,6 @@ export default function AddContactModel() {
   const [selectedContacts, setSelectedContacts] = useState<Contact[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isWhatsappBlock, setIsWhatsappBlock] = useState({ blocked: false });
-  const [userData, setUserData] = useState<Employee>(USERDATA_VALUE);
   const handleEmailCampaignInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setEmailCampaign((prevData) => ({ ...prevData, [name]: value }));
@@ -92,7 +71,6 @@ export default function AddContactModel() {
     axios
       .get("/Authentication/GET/GetSessionData", { withCredentials: true })
       .then((res) => {
-        setUserData(res.data);
         setSelectedContacts([
           {
             code: res.data.Agente,
