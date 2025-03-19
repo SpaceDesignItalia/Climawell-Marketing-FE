@@ -1,4 +1,3 @@
-import React from "react";
 import { RadioGroup } from "@heroui/react";
 import { CustomRadio } from "./CustomRadio";
 
@@ -7,14 +6,17 @@ interface CustomerTypeSelectorProps {
   onChange: (value: string) => void;
 }
 
-export function CustomerTypeSelector({ value, onChange }: CustomerTypeSelectorProps) {
+export function CustomerTypeSelector({
+  value,
+  onChange,
+}: CustomerTypeSelectorProps) {
   console.log("CustomerTypeSelector rendering, current value:", value);
-  
+
   const handleChange = (newValue: string) => {
     console.log("CustomerTypeSelector - Cambio selezione a:", newValue);
     onChange(newValue);
   };
-  
+
   return (
     <div className="flex flex-col gap-5 sm:col-span-4">
       <div>
@@ -22,9 +24,9 @@ export function CustomerTypeSelector({ value, onChange }: CustomerTypeSelectorPr
           Seleziona il tipo di cliente
         </h2>
         <p className="mt-1 text-sm/6 text-gray-600">
-          Scegli il tipo di cliente per cui stai iniziando la campagna.{" "}
-          <br />
-          Questa selezione ci aiuterà a personalizzare le informazioni richieste.
+          Scegli il tipo di cliente per cui stai iniziando la campagna. <br />
+          Questa selezione ci aiuterà a personalizzare le informazioni
+          richieste.
         </p>
       </div>
 
@@ -38,28 +40,21 @@ export function CustomerTypeSelector({ value, onChange }: CustomerTypeSelectorPr
           description="Seleziona questa opzione per inviare la campagna ai clienti privati."
           value="private"
         >
-          <span className="flex items-center gap-2">
-            🧑‍💻 Cliente Privato
-          </span>
+          <span className="flex items-center gap-2">🧑‍💻 Cliente Privato</span>
         </CustomRadio>
         <CustomRadio
           description="Seleziona questa opzione per inviare la campagna alle aziende."
           value="business"
         >
-          <span className="flex items-center gap-2">
-            🏢 Cliente Azienda
-          </span>
+          <span className="flex items-center gap-2">🏢 Cliente Azienda</span>
         </CustomRadio>
         <CustomRadio
           description="Seleziona questa opzione per inviare la campagna ai clienti premium."
           value="premium"
         >
-          <span className="flex items-center gap-2">
-            🥇 Cliente Premium
-          </span>
+          <span className="flex items-center gap-2">🥇 Cliente Premium</span>
         </CustomRadio>
       </RadioGroup>
     </div>
   );
 }
-

@@ -1,10 +1,13 @@
-"use client"
+"use client";
 
-import React, { useState, useEffect } from "react";
 import { Button, RadioGroup } from "@heroui/react";
+import { useEffect, useState } from "react";
 import { ContactSelector } from "../../Components/Campaigns/Other/components/campaign/ContactSelector";
 import { CustomRadio } from "../../Components/Campaigns/Other/components/campaign/CustomRadio";
-import type { Cap, Contact } from "../../Components/Campaigns/Other/types/campaign";
+import type {
+  Cap,
+  Contact,
+} from "../../Components/Campaigns/Other/types/campaign";
 
 /**
  * Pagina per la creazione di una nuova campagna marketing.
@@ -13,20 +16,25 @@ import type { Cap, Contact } from "../../Components/Campaigns/Other/types/campai
 export default function NewCampaignPage() {
   // Stato per il tipo di cliente selezionato
   const [customerType, setCustomerType] = useState<string>("private");
-  
+
   // Stati per i filtri di ContactSelector - uno per ogni tipo di cliente
   const [privateCaps, setPrivateCaps] = useState<Cap[]>([]);
   const [privateContacts, setPrivateContacts] = useState<Contact[]>([]);
-  
+
   const [businessCaps, setBusinessCaps] = useState<Cap[]>([]);
   const [businessContacts, setBusinessContacts] = useState<Contact[]>([]);
-  
+
   const [premiumCaps, setPremiumCaps] = useState<Cap[]>([]);
   const [premiumContacts, setPremiumContacts] = useState<Contact[]>([]);
-  
+
   // Handler per il cambio del tipo di cliente
   const handleCustomerTypeChange = (value: string) => {
-    console.log("NewCampaignPage - Cambio tipo cliente da", customerType, "a", value);
+    console.log(
+      "NewCampaignPage - Cambio tipo cliente da",
+      customerType,
+      "a",
+      value
+    );
     setCustomerType(value);
   };
 
@@ -37,27 +45,27 @@ export default function NewCampaignPage() {
 
   // Seleziona i setter corretti in base al tipo cliente
   const getCurrentProps = () => {
-    switch(customerType) {
+    switch (customerType) {
       case "business":
         return {
           caps: businessCaps,
           contacts: businessContacts,
           setCaps: setBusinessCaps,
-          setContacts: setBusinessContacts
+          setContacts: setBusinessContacts,
         };
       case "premium":
         return {
           caps: premiumCaps,
           contacts: premiumContacts,
           setCaps: setPremiumCaps,
-          setContacts: setPremiumContacts
+          setContacts: setPremiumContacts,
         };
       default: // "private"
         return {
           caps: privateCaps,
           contacts: privateContacts,
           setCaps: setPrivateCaps,
-          setContacts: setPrivateContacts
+          setContacts: setPrivateContacts,
         };
     }
   };
@@ -69,9 +77,11 @@ export default function NewCampaignPage() {
     <div className="container mx-auto py-8 px-4">
       <div className="mb-6">
         <h1 className="text-2xl font-bold mb-1">Crea nuova campagna</h1>
-        <p className="text-gray-600">Configura i dettagli della tua campagna marketing</p>
+        <p className="text-gray-600">
+          Configura i dettagli della tua campagna marketing
+        </p>
       </div>
-      
+
       {/* Sezione selezione tipo cliente */}
       <div className="bg-white rounded-lg shadow p-6 mb-8">
         <div className="border-b border-gray-900/10 pb-8">
@@ -83,7 +93,8 @@ export default function NewCampaignPage() {
               <p className="mt-1 text-sm/6 text-gray-600">
                 Scegli il tipo di cliente per cui stai iniziando la campagna.
                 <br />
-                Questa selezione ci aiuterà a personalizzare le informazioni richieste.
+                Questa selezione ci aiuterà a personalizzare le informazioni
+                richieste.
               </p>
             </div>
 
@@ -120,13 +131,13 @@ export default function NewCampaignPage() {
             </RadioGroup>
           </div>
         </div>
-        
+
         {/* SOLUZIONE ALTERNATIVA: Uso di switch/case per renderizzare il componente corretto */}
         <div className="mt-8" key={`selector-container-${customerType}`}>
           {(() => {
             console.log("Rendering selector per tipo cliente:", customerType);
-            
-            switch(customerType) {
+
+            switch (customerType) {
               case "business":
                 return (
                   <ContactSelector
@@ -164,28 +175,34 @@ export default function NewCampaignPage() {
           })()}
         </div>
       </div>
-      
+
       {/* Debug info - solo per sviluppo */}
       <div className="mb-8 p-4 bg-gray-100 rounded-lg text-xs">
         <p className="font-bold mb-1">Informazioni di debug:</p>
-        <p>Tipo cliente attuale: <strong>{customerType}</strong></p>
         <p>
-          Contatti {customerType === "private" ? "privati" : 
-                   customerType === "business" ? "aziendali" : 
-                   "premium"} selezionati: <strong>{contacts.length}</strong>
+          Tipo cliente attuale: <strong>{customerType}</strong>
         </p>
-        <p>CAP selezionati: <strong>{caps.length}</strong></p>
+        <p>
+          Contatti{" "}
+          {customerType === "private"
+            ? "privati"
+            : customerType === "business"
+            ? "aziendali"
+            : "premium"}{" "}
+          selezionati: <strong>{contacts.length}</strong>
+        </p>
+        <p>
+          CAP selezionati: <strong>{caps.length}</strong>
+        </p>
       </div>
-      
+
       {/* Pulsanti di navigazione */}
       <div className="flex justify-end gap-4 mt-8">
         <Button variant="flat" color="danger">
           Annulla
         </Button>
-        <Button color="primary">
-          Continua
-        </Button>
+        <Button color="primary">Continua</Button>
       </div>
     </div>
   );
-} 
+}

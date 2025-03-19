@@ -1,36 +1,47 @@
 // components/campaign/ContactSelector.tsx
-"use client"
+"use client";
 
-import React, { useState, useRef, useEffect } from "react"
-import { Input, Chip, Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Spinner } from "@heroui/react"
-import type { Cap, Contact } from "../../types/campaign"
-import { tuscanyCaps, contacts } from "../../utils/constants"
-import axios from "axios"
+import React, { useState, useRef, useEffect } from "react";
+import {
+  Input,
+  Chip,
+  Button,
+  Table,
+  TableHeader,
+  TableColumn,
+  TableBody,
+  TableRow,
+  TableCell,
+  Spinner,
+} from "@heroui/react";
+import type { Cap, Contact } from "../../types/campaign";
+import { tuscanyCaps, contacts } from "../../utils/constants";
+import axios from "axios";
 
 interface Customer {
-  CustomerId?: number
-  CompanyId?: number
-  CustomerFullName?: string
-  CompanyName?: string
-  CustomerEmail?: string
-  CompanyEmail?: string
-  CustomerPhone?: string
-  CompanyPhone?: string
-  PolicyAccepted?: boolean
-  Agente: string
-  Cap: string
-  id?: number // ID generico per entrambi i tipi
-  name?: string // Nome generico per entrambi i tipi
-  email?: string // Email generico per entrambi i tipi
-  phone?: string // Telefono generico per entrambi i tipi
+  CustomerId?: number;
+  CompanyId?: number;
+  CustomerFullName?: string;
+  CompanyName?: string;
+  CustomerEmail?: string;
+  CompanyEmail?: string;
+  CustomerPhone?: string;
+  CompanyPhone?: string;
+  PolicyAccepted?: boolean;
+  Agente: string;
+  Cap: string;
+  id?: number; // ID generico per entrambi i tipi
+  name?: string; // Nome generico per entrambi i tipi
+  email?: string; // Email generico per entrambi i tipi
+  phone?: string; // Telefono generico per entrambi i tipi
 }
 
 interface ContactSelectorProps {
-  onCapsSelect: (caps: Cap[]) => void
-  onContactsSelect: (contacts: Contact[]) => void
-  selectedCaps: Cap[]
-  selectedContacts: Contact[]
-  customerType: string // "private", "business" o "premium"
+  onCapsSelect: (caps: Cap[]) => void;
+  onContactsSelect: (contacts: Contact[]) => void;
+  selectedCaps: Cap[];
+  selectedContacts: Contact[];
+  customerType: string; // "private", "business" o "premium"
 }
 
 export function ContactSelector({
@@ -55,25 +66,26 @@ export function ContactSelector({
   // Log visibile per debugging
   console.log("ContactSelector - Rendering con tipo cliente:", customerType);
 
-  const [capSearchTerm, setCapSearchTerm] = useState("")
-  const [contactSearchTerm, setContactSearchTerm] = useState("")
-  const [showCapDropdown, setShowCapDropdown] = useState(false)
-  const [showContactDropdown, setShowContactDropdown] = useState(false)
-  const [focusedCapIndex, setFocusedCapIndex] = useState(-1)
-  const [focusedContactIndex, setFocusedContactIndex] = useState(-1)
-  const capInputRef = useRef<HTMLInputElement>(null)
-  const contactInputRef = useRef<HTMLInputElement>(null)
-  const capDropdownRef = useRef<HTMLDivElement>(null)
-  const contactDropdownRef = useRef<HTMLDivElement>(null)
-  
+  const [capSearchTerm, setCapSearchTerm] = useState("");
+  const [contactSearchTerm, setContactSearchTerm] = useState("");
+  const [showCapDropdown, setShowCapDropdown] = useState(false);
+  const [showContactDropdown, setShowContactDropdown] = useState(false);
+  const [focusedCapIndex, setFocusedCapIndex] = useState(-1);
+  const [focusedContactIndex, setFocusedContactIndex] = useState(-1);
+  const capInputRef = useRef<HTMLInputElement>(null);
+  const contactInputRef = useRef<HTMLInputElement>(null);
+  const capDropdownRef = useRef<HTMLDivElement>(null);
+  const contactDropdownRef = useRef<HTMLDivElement>(null);
+
   // Stati per la gestione dei contatti e il filtraggio
-  const [allContacts, setAllContacts] = useState<Customer[]>([])
-  const [filteredRecipients, setFilteredRecipients] = useState<Customer[]>([])
-  const [showRecipients, setShowRecipients] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [allContacts, setAllContacts] = useState<Customer[]>([]);
+  const [filteredRecipients, setFilteredRecipients] = useState<Customer[]>([]);
+  const [showRecipients, setShowRecipients] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   // Aggiungiamo uno stato per tenere traccia dell'ultimo tipo di cliente caricato
-  const [lastLoadedCustomerType, setLastLoadedCustomerType] = useState<string>("")
+  const [lastLoadedCustomerType, setLastLoadedCustomerType] =
+    useState<string>("");
 
   const filteredCaps = tuscanyCaps.filter(
     (cap) =>
@@ -81,86 +93,105 @@ export function ContactSelector({
       (capSearchTerm === "" ||
         cap.Cap.toLowerCase().includes(capSearchTerm.toLowerCase()) ||
         cap.City.toLowerCase().includes(capSearchTerm.toLowerCase()))
-  )
+  );
 
   const filteredContacts = contacts.filter(
     (contact) =>
-      !selectedContacts.some((selectedContact) => selectedContact.code === contact.code) &&
+      !selectedContacts.some(
+        (selectedContact) => selectedContact.code === contact.code
+      ) &&
       (contactSearchTerm === "" ||
         contact.name.toLowerCase().includes(contactSearchTerm.toLowerCase()) ||
         contact.code.toLowerCase().includes(contactSearchTerm.toLowerCase()))
-  )
+  );
 
   const handleCapSelect = (cap: Cap) => {
-    onCapsSelect([...selectedCaps, cap])
-    setCapSearchTerm("")
-    setFocusedCapIndex(-1)
-    capInputRef.current?.focus()
-  }
+    onCapsSelect([...selectedCaps, cap]);
+    setCapSearchTerm("");
+    setFocusedCapIndex(-1);
+    capInputRef.current?.focus();
+  };
 
   const handleContactSelect = (contact: Contact) => {
-    onContactsSelect([...selectedContacts, contact])
-    setContactSearchTerm("")
-    setFocusedContactIndex(-1)
-    contactInputRef.current?.focus()
-  }
+    onContactsSelect([...selectedContacts, contact]);
+    setContactSearchTerm("");
+    setFocusedContactIndex(-1);
+    contactInputRef.current?.focus();
+  };
 
   const handleRemoveCap = (capToRemove: Cap) => {
-    onCapsSelect(selectedCaps.filter((cap) => cap.Cap !== capToRemove.Cap))
-  }
+    onCapsSelect(selectedCaps.filter((cap) => cap.Cap !== capToRemove.Cap));
+  };
 
   const handleRemoveContact = (contactToRemove: Contact) => {
-    onContactsSelect(selectedContacts.filter((contact) => contact.code !== contactToRemove.code))
-  }
+    onContactsSelect(
+      selectedContacts.filter(
+        (contact) => contact.code !== contactToRemove.code
+      )
+    );
+  };
 
   const handleCapKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "ArrowDown") {
-      e.preventDefault()
-      setFocusedCapIndex((prev) => (prev < filteredCaps.length - 1 ? prev + 1 : prev))
+      e.preventDefault();
+      setFocusedCapIndex((prev) =>
+        prev < filteredCaps.length - 1 ? prev + 1 : prev
+      );
     } else if (e.key === "ArrowUp") {
-      e.preventDefault()
-      setFocusedCapIndex((prev) => (prev > 0 ? prev - 1 : prev))
+      e.preventDefault();
+      setFocusedCapIndex((prev) => (prev > 0 ? prev - 1 : prev));
     } else if (e.key === "Enter" && focusedCapIndex >= 0) {
-      e.preventDefault()
-      handleCapSelect(filteredCaps[focusedCapIndex])
+      e.preventDefault();
+      handleCapSelect(filteredCaps[focusedCapIndex]);
     }
-  }
+  };
 
   const handleContactKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "ArrowDown") {
-      e.preventDefault()
-      setFocusedContactIndex((prev) => (prev < filteredContacts.length - 1 ? prev + 1 : prev))
+      e.preventDefault();
+      setFocusedContactIndex((prev) =>
+        prev < filteredContacts.length - 1 ? prev + 1 : prev
+      );
     } else if (e.key === "ArrowUp") {
-      e.preventDefault()
-      setFocusedContactIndex((prev) => (prev > 0 ? prev - 1 : prev))
+      e.preventDefault();
+      setFocusedContactIndex((prev) => (prev > 0 ? prev - 1 : prev));
     } else if (e.key === "Enter" && focusedContactIndex >= 0) {
-      e.preventDefault()
-      handleContactSelect(filteredContacts[focusedContactIndex])
+      e.preventDefault();
+      handleContactSelect(filteredContacts[focusedContactIndex]);
     }
-  }
-  
+  };
+
   // Carica i contatti quando cambia il tipo di cliente
   useEffect(() => {
     // Verifica se il tipo di cliente è effettivamente cambiato
     if (customerType !== lastLoadedCustomerType) {
-      console.log(`ContactSelector - Tipo cliente cambiato da "${lastLoadedCustomerType}" a "${customerType}"`);
-      
+      console.log(
+        `ContactSelector - Tipo cliente cambiato da "${lastLoadedCustomerType}" a "${customerType}"`
+      );
+
       // Aggiorna lo stato che tiene traccia dell'ultimo tipo di cliente caricato
       setLastLoadedCustomerType(customerType);
-      
+
       // Resettare i filtri e lo stato interno
       setFilteredRecipients([]);
       setShowRecipients(false);
-      
+
       // Ricarica i contatti con il nuovo tipo di cliente
       setIsLoading(true);
       fetchContacts()
         .then(() => {
-          console.log(`ContactSelector - Contatti caricati con successo per tipo: ${customerType}`);
+          console.log(
+            `ContactSelector - Contatti caricati con successo per tipo: ${customerType}`
+          );
         })
-        .catch(error => {
-          console.error(`ContactSelector - Errore nel caricamento contatti per ${customerType}:`, error);
-          setErrorMessage(`Errore nel caricamento dei contatti ${getCustomerTypeText()}. Riprova più tardi.`);
+        .catch((error) => {
+          console.error(
+            `ContactSelector - Errore nel caricamento contatti per ${customerType}:`,
+            error
+          );
+          setErrorMessage(
+            `Errore nel caricamento dei contatti ${getCustomerTypeText()}. Riprova più tardi.`
+          );
         })
         .finally(() => {
           setIsLoading(false);
@@ -170,85 +201,108 @@ export function ContactSelector({
 
   // Funzione per caricare i contatti dall'API in base al tipo di cliente
   const fetchContacts = async () => {
-    console.log(`ContactSelector - fetchContacts iniziato per tipo: ${customerType}`);
+    console.log(
+      `ContactSelector - fetchContacts iniziato per tipo: ${customerType}`
+    );
     try {
       setIsLoading(true);
       setErrorMessage(null);
-      
+
       let response;
-      
+
       // Determina se è premium in base al tipo di cliente
       const isPremium = customerType === "premium";
-      
+
       // Carica i contatti in base al tipo di cliente selezionato
       if (customerType === "business") {
         // Per i clienti aziendali
-        console.log(`ContactSelector - Caricamento contatti aziendali${isPremium ? ' premium' : ''}...`);
+        console.log(
+          `ContactSelector - Caricamento contatti aziendali${
+            isPremium ? " premium" : ""
+          }...`
+        );
         response = await axios.get("/Contacts/GET/GetAllCompany", {
-          params: { isPremium } // Aggiungo isPremium per le aziende
+          params: { isPremium }, // Aggiungo isPremium per le aziende
         });
       } else {
         // Per i clienti privati o premium
-        console.log(`ContactSelector - Caricamento contatti ${isPremium ? 'premium' : 'privati'}...`);
+        console.log(
+          `ContactSelector - Caricamento contatti ${
+            isPremium ? "premium" : "privati"
+          }...`
+        );
         response = await axios.get("/Contacts/GET/GetAllPrivate", {
           params: { isPremium },
         });
       }
-      
+
       // Verifica se la risposta è valida
       if (response.data && Array.isArray(response.data)) {
         // Normalizza i dati per avere una struttura uniforme indipendentemente dal tipo
         const contacts = response.data.map((contact: any) => {
           // Determina i campi in base al tipo di cliente
           const isCompany = customerType === "business";
-          
+
           const normalizedContact: Customer = {
             Agente: contact.Agente || "",
             Cap: contact.Cap || "",
             // Campi generici per facilitare il rendering
             id: isCompany ? contact.CompanyId : contact.CustomerId || 0,
-            name: isCompany ? contact.CompanyName : contact.CustomerFullName || "",
-            email: isCompany ? contact.CompanyEmail : contact.CustomerEmail || "",
-            phone: isCompany ? contact.CompanyPhone : contact.CustomerPhone || "",
+            name: isCompany
+              ? contact.CompanyName
+              : contact.CustomerFullName || "",
+            email: isCompany
+              ? contact.CompanyEmail
+              : contact.CustomerEmail || "",
+            phone: isCompany
+              ? contact.CompanyPhone
+              : contact.CustomerPhone || "",
             // Preserva i campi originali
-            ...contact
+            ...contact,
           };
-          
+
           return normalizedContact;
         });
-        
-        console.log(`ContactSelector - Contatti ${customerType} caricati (${contacts.length})`);
+
+        console.log(
+          `ContactSelector - Contatti ${customerType} caricati (${contacts.length})`
+        );
         if (contacts.length > 0) {
           console.log("ContactSelector - Esempio primo contatto:", contacts[0]);
         }
-        
+
         setAllContacts(contacts);
-        
+
         // Se ci sono filtri attivi, applica il filtraggio
         if (selectedCaps.length > 0 || selectedContacts.length > 0) {
           const filtered = filterContacts(contacts);
           setFilteredRecipients(filtered);
         }
-        
+
         return contacts;
       } else {
         console.warn("ContactSelector - API ha restituito dati non validi");
         setErrorMessage("Impossibile caricare i contatti: risposta non valida");
         setAllContacts([]);
-        
+
         return [];
       }
     } catch (error) {
-      console.error(`ContactSelector - Errore nel caricamento dei contatti ${customerType}:`, error);
-      setErrorMessage("Errore nel caricamento dei contatti. Riprova più tardi.");
+      console.error(
+        `ContactSelector - Errore nel caricamento dei contatti ${customerType}:`,
+        error
+      );
+      setErrorMessage(
+        "Errore nel caricamento dei contatti. Riprova più tardi."
+      );
       setAllContacts([]);
-      
+
       throw error;
     } finally {
       setIsLoading(false);
     }
   };
-  
+  console.log(errorMessage);
   // Funzione per filtrare i contatti in base ai criteri selezionati
   const filterContacts = (contacts = allContacts) => {
     // Se non ci sono contatti, non fare nulla
@@ -256,106 +310,117 @@ export function ContactSelector({
       console.log("Nessun contatto da filtrare");
       return [];
     }
-    
+
     // Se non ci sono filtri, mostra tutti i contatti
     if (selectedCaps.length === 0 && selectedContacts.length === 0) {
       console.log("Nessun filtro selezionato");
       return [];
     }
-    
-    console.log(`Filtraggio contatti ${customerType} con:`, { 
-      caps: selectedCaps.map(cap => cap.Cap), 
-      agents: selectedContacts.map(agent => agent.code) 
+
+    console.log(`Filtraggio contatti ${customerType} con:`, {
+      caps: selectedCaps.map((cap) => cap.Cap),
+      agents: selectedContacts.map((agent) => agent.code),
     });
-    
+
     return contacts.filter((contact) => {
       // Verifica se il contatto ha i campi necessari
       if (!contact) {
         console.warn("Contatto non valido:", contact);
         return false;
       }
-      
+
       // Verifica se il CAP del contatto corrisponde a uno dei CAP selezionati
-      const matchesCap = selectedCaps.length === 0 || 
-        selectedCaps.some(selectedCap => {
+      const matchesCap =
+        selectedCaps.length === 0 ||
+        selectedCaps.some((selectedCap) => {
           const contactCap = contact.Cap || "";
           return contactCap === selectedCap.Cap;
         });
-      
+
       // Verifica se l'agente del contatto corrisponde a uno degli agenti selezionati
-      const matchesAgent = selectedContacts.length === 0 || 
-        selectedContacts.some(selectedAgent => {
+      const matchesAgent =
+        selectedContacts.length === 0 ||
+        selectedContacts.some((selectedAgent) => {
           if (!contact.Agente) return false;
-          
+
           // Confronta il codice dell'agente con il valore in Agente
           return contact.Agente === selectedAgent.code;
         });
-      
+
       return matchesCap && matchesAgent;
     });
   };
-  
+
   // Aggiorna i filtri quando cambiano le selezioni di CAP o agenti
   useEffect(() => {
     if (allContacts.length > 0) {
-      console.log(`Aggiornamento filtri con ${allContacts.length} contatti ${customerType}`);
+      console.log(
+        `Aggiornamento filtri con ${allContacts.length} contatti ${customerType}`
+      );
       const filtered = filterContacts();
-      console.log(`Contatti filtrati: ${filtered.length} su ${allContacts.length}`);
+      console.log(
+        `Contatti filtrati: ${filtered.length} su ${allContacts.length}`
+      );
       setFilteredRecipients(filtered);
     } else {
       console.log("Nessun contatto caricato per applicare filtri");
     }
   }, [selectedCaps, selectedContacts, allContacts.length]);
-  
+
   // Gestione del click fuori dalle dropdown
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (capDropdownRef.current && !capDropdownRef.current.contains(event.target as Node)) {
-        setShowCapDropdown(false)
+      if (
+        capDropdownRef.current &&
+        !capDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowCapDropdown(false);
       }
-      if (contactDropdownRef.current && !contactDropdownRef.current.contains(event.target as Node)) {
-        setShowContactDropdown(false)
+      if (
+        contactDropdownRef.current &&
+        !contactDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowContactDropdown(false);
       }
     }
 
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Ottieni il testo del tipo di cliente per la UI
   const getCustomerTypeText = () => {
     console.log("getCustomerTypeText chiamato con customerType:", customerType);
     switch (customerType) {
-      case "business": return "aziendali";
-      case "premium": return "premium";
-      default: return "privati";
-    }
-  };
-
-  // Ottieni l'emoji per il tipo di cliente
-  const getCustomerTypeEmoji = () => {
-    console.log("getCustomerTypeEmoji chiamato con customerType:", customerType);
-    switch (customerType) {
-      case "business": return "🏢";
-      case "premium": return "🥇";
-      default: return "🧑‍💻";
+      case "business":
+        return "aziendali";
+      case "premium":
+        return "premium";
+      default:
+        return "privati";
     }
   };
 
   // Informazioni sul tipo cliente direttamente calcolate per evitare problemi di stato
   const customerTypeText = (() => {
     switch (customerType) {
-      case "business": return "aziendali";
-      case "premium": return "premium";
-      default: return "privati";
+      case "business":
+        return "aziendali";
+      case "premium":
+        return "premium";
+      default:
+        return "privati";
     }
   })();
 
   const customerTypeEmoji = (() => {
     switch (customerType) {
-      case "business": return "🏢";
-      case "premium": return "🥇";
-      default: return "🧑‍💻";
+      case "business":
+        return "🏢";
+      case "premium":
+        return "🥇";
+      default:
+        return "🧑‍💻";
     }
   })();
 
@@ -366,16 +431,20 @@ export function ContactSelector({
   return (
     <>
       <div className="border-b border-gray-900/10 pb-12">
-        <h2 className="text-base/7 font-semibold text-gray-900">Seleziona destinatari campagna</h2>
+        <h2 className="text-base/7 font-semibold text-gray-900">
+          Seleziona destinatari campagna
+        </h2>
         <p className="mt-1 text-sm/6 text-gray-600">
           <span className="inline-flex items-center gap-1 font-medium">
-            {customerTypeEmoji} 
+            {customerTypeEmoji}
             Stai selezionando clienti <strong>{customerTypeText}</strong>
           </span>
           <br />
           Seleziona le zone e gli agenti per filtrare i destinatari.
           <br />
-          <span className="text-primary font-medium">Puoi selezionare più elementi contemporaneamente ✨</span>
+          <span className="text-primary font-medium">
+            Puoi selezionare più elementi contemporaneamente ✨
+          </span>
         </p>
 
         <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
@@ -389,7 +458,9 @@ export function ContactSelector({
                 Zone (CAP)
               </label>
               <div className="flex items-center gap-2">
-                <Chip size="sm" variant="flat" color="primary">Selezione multipla</Chip>
+                <Chip size="sm" variant="flat" color="primary">
+                  Selezione multipla
+                </Chip>
               </div>
               <div className="relative" ref={capDropdownRef}>
                 <Input
@@ -422,11 +493,15 @@ export function ContactSelector({
                           aria-selected={index === focusedCapIndex}
                         >
                           <span>{cap.City}</span>
-                          <span className="text-gray-400 float-right">{cap.Cap}</span>
+                          <span className="text-gray-400 float-right">
+                            {cap.Cap}
+                          </span>
                         </button>
                       ))}
                       {filteredCaps.length === 0 && (
-                        <div className="px-3 py-2 text-sm text-gray-500 text-center">Nessun risultato trovato</div>
+                        <div className="px-3 py-2 text-sm text-gray-500 text-center">
+                          Nessun risultato trovato
+                        </div>
                       )}
                     </div>
                   </div>
@@ -459,7 +534,9 @@ export function ContactSelector({
                 Agenti
               </label>
               <div className="flex items-center gap-2">
-                <Chip size="sm" variant="flat" color="primary">Selezione multipla</Chip>
+                <Chip size="sm" variant="flat" color="primary">
+                  Selezione multipla
+                </Chip>
               </div>
               <div className="relative" ref={contactDropdownRef}>
                 <Input
@@ -492,11 +569,15 @@ export function ContactSelector({
                           aria-selected={index === focusedContactIndex}
                         >
                           <span>{contact.name}</span>
-                          <span className="text-gray-400 float-right">#{contact.code}</span>
+                          <span className="text-gray-400 float-right">
+                            #{contact.code}
+                          </span>
                         </button>
                       ))}
                       {filteredContacts.length === 0 && (
-                        <div className="px-3 py-2 text-sm text-gray-500 text-center">Nessun risultato trovato</div>
+                        <div className="px-3 py-2 text-sm text-gray-500 text-center">
+                          Nessun risultato trovato
+                        </div>
                       )}
                     </div>
                   </div>
@@ -536,30 +617,46 @@ export function ContactSelector({
                 className="flex items-center gap-1"
               >
                 <span className="font-medium">{filteredRecipients.length}</span>
-                <span>{showRecipients ? "Nascondi destinatari" : "Visualizza destinatari"}</span>
+                <span>
+                  {showRecipients
+                    ? "Nascondi destinatari"
+                    : "Visualizza destinatari"}
+                </span>
               </Button>
             </div>
-            
+
             <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-              <h4 className="text-sm font-medium text-gray-900 mb-2">Riepilogo campagna:</h4>
+              <h4 className="text-sm font-medium text-gray-900 mb-2">
+                Riepilogo campagna:
+              </h4>
               <ul className="space-y-1 text-sm text-gray-600">
                 <li>• Totale destinatari: {filteredRecipients.length}</li>
                 <li>• Tipo cliente: {getCustomerTypeText()}</li>
                 {selectedCaps.length > 0 && (
-                  <li>• Zone selezionate: {selectedCaps.map(cap => `${cap.City} (${cap.Cap})`).join(", ")}</li>
+                  <li>
+                    • Zone selezionate:{" "}
+                    {selectedCaps
+                      .map((cap) => `${cap.City} (${cap.Cap})`)
+                      .join(", ")}
+                  </li>
                 )}
                 {selectedContacts.length > 0 && (
-                  <li>• Agenti selezionati: {selectedContacts.map(agent => agent.name).join(", ")}</li>
+                  <li>
+                    • Agenti selezionati:{" "}
+                    {selectedContacts.map((agent) => agent.name).join(", ")}
+                  </li>
                 )}
               </ul>
             </div>
-            
+
             {showRecipients && (
               <div className="mt-4 border rounded-lg overflow-hidden">
                 {isLoading ? (
                   <div className="flex flex-col items-center justify-center p-10">
                     <Spinner size="lg" />
-                    <p className="mt-2 text-sm text-gray-500">Caricamento destinatari in corso...</p>
+                    <p className="mt-2 text-sm text-gray-500">
+                      Caricamento destinatari in corso...
+                    </p>
                   </div>
                 ) : filteredRecipients.length > 0 ? (
                   <Table
@@ -586,7 +683,8 @@ export function ContactSelector({
                           <TableCell>{recipient.phone || "-"}</TableCell>
                           <TableCell>
                             {/* Mostra il nome dell'agente invece del codice */}
-                            {contacts.find(c => c.code === recipient.Agente)?.name || recipient.Agente}
+                            {contacts.find((c) => c.code === recipient.Agente)
+                              ?.name || recipient.Agente}
                           </TableCell>
                           <TableCell>{recipient.Cap}</TableCell>
                         </TableRow>
@@ -595,7 +693,9 @@ export function ContactSelector({
                   </Table>
                 ) : (
                   <div className="flex flex-col items-center justify-center p-10">
-                    <p className="text-sm text-gray-500">Nessun destinatario corrisponde ai filtri selezionati</p>
+                    <p className="text-sm text-gray-500">
+                      Nessun destinatario corrisponde ai filtri selezionati
+                    </p>
                   </div>
                 )}
               </div>
@@ -604,5 +704,5 @@ export function ContactSelector({
         )}
       </div>
     </>
-  )
+  );
 }
