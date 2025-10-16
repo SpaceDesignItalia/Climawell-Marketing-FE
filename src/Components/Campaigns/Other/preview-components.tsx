@@ -164,7 +164,7 @@ function EmailTemplate({
                 <!-- Header -->
                 <tr>
                   <td class="header">
-                    <img src="https://static.wixstatic.com/media/fb5ac9_9096a8bcdb354787a339ef207dc014e9~mv2.png/v1/fill/w_240,h_157,al_c,lg_1,q_85,enc_auto/PNGGGGGGGGGGGGGGGGGGGGGGG.png" 
+                    <img src="https://www.essecasa.it/wp-content/uploads/2024/02/sito-1030x1030.png" 
                          alt="Climawell Logo" width="180" style="display: block; margin: 0 auto" />
                   </td>
                 </tr>
@@ -196,11 +196,6 @@ function EmailTemplate({
                     `
                         : ""
                     }
-
-                    <p class="signature">
-                      Con i migliori auguri di successo,<br />
-                      Il Team Climawell
-                    </p>
 
                     <div class="divider"></div>
 
@@ -316,7 +311,7 @@ export function PreviewWhatsAppModal({
                 <div className="bg-[#f0f2f5] px-4 py-2 flex items-center gap-3 border-b border-gray-200">
                   <div className="w-10 h-10 rounded-full bg-white overflow-hidden flex items-center justify-center">
                     <img
-                      src="https://static.wixstatic.com/media/fb5ac9_9096a8bcdb354787a339ef207dc014e9~mv2.png/v1/fill/w_240,h_157,al_c,lg_1,q_85,enc_auto/PNGGGGGGGGGGGGGGGGGGGGGGG.png"
+                      src="https://www.essecasa.it/wp-content/uploads/2024/02/sito-1030x1030.png"
                       alt="Profile"
                       className="w-8 h-8 object-contain"
                     />
