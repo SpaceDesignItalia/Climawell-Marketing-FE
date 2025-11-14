@@ -49,7 +49,7 @@ export default function ContactsTableCompany({
   isWhatsappBlock,
 }: ContactsTableCompanyProps) {
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [searchType, setSearchType] = useState<"email" | "agent">("email");
+  const [searchType, setSearchType] = useState<"email" | "agent" | "phone">("email");
   const [companies, setCompany] = useState<Company[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [isLoading, setIsLoading] = useState(true);
@@ -98,6 +98,8 @@ export default function ContactsTableCompany({
     }
   }
 
+  const normalizePhone = (value?: string) => (value || "").replace(/\D+/g, "");
+
   async function SearchCustomer() {
     try {
       setIsSearching(true);
@@ -112,7 +114,7 @@ export default function ContactsTableCompany({
         );
         console.log("Risultato ricerca per email:", response.data);
         setCompany(response.data);
-      } else {
+      } else if (searchType === "agent") {
         const response = await axios.get("/Contacts/GET/GetAllCompany", {
           params: { isPremium }
         });
@@ -123,6 +125,19 @@ export default function ContactsTableCompany({
         
         console.log("Risultato ricerca per agente:", filteredCompanies);
         setCompany(filteredCompanies);
+      } else {
+        const response = await axios.get("/Contacts/GET/GetAllCompany", {
+          params: { isPremium }
+        });
+
+        const term = normalizePhone(searchTerm);
+        const filteredCompanies = response.data.filter((company: Company) => {
+          const phone = normalizePhone(company.CompanyPhone);
+          return term.length > 0 && phone.includes(term);
+        });
+
+        console.log("Risultato ricerca per telefono:", filteredCompanies);
+        setCompany(filteredCompanies);
       }
     } catch (error) {
       console.error("Errore durante la ricerca delle aziende:", error);
@@ -131,6 +146,22 @@ export default function ContactsTableCompany({
       setIsSearching(false);
     }
   }
+
+  const cycleSearchType = () => {
+    if (searchType === "email") return setSearchType("agent");
+    if (searchType === "agent") return setSearchType("phone");
+    return setSearchType("email");
+  };
+
+  const searchPlaceholder =
+    searchType === "email"
+      ? "Cerca azienda per email..."
+      : searchType === "agent"
+      ? "Cerca azienda per codice agente..."
+      : "Cerca azienda per numero di telefono...";
+
+  const searchTypeLabel =
+    searchType === "email" ? "Per Email" : searchType === "agent" ? "Per Agente" : "Per Telefono";
 
   const getAgentName = (agentCode: string) => {
     const agent = agentList.find(a => a.code === agentCode);
@@ -223,16 +254,16 @@ export default function ContactsTableCompany({
                 }}
                 value={searchTerm}
                 className="w-full"
-                placeholder={searchType === "email" ? "Cerca azienda per email..." : "Cerca azienda per codice agente..."}
+                placeholder={searchPlaceholder}
                 disabled={isLoading}
               />
               <Button
                 radius="full"
                 variant="flat"
-                onClick={() => setSearchType(searchType === "email" ? "agent" : "email")}
+                onClick={cycleSearchType}
                 className="min-w-[120px]"
               >
-                {searchType === "email" ? "Per Email" : "Per Agente"}
+                {searchTypeLabel}
               </Button>
             </div>
             <Button
@@ -420,6 +451,7 @@ export default function ContactsTableCompany({
                   Nessun risultato corrisponde alla tua ricerca:{" "}
                   <span className="font-semibold italic">{searchTerm}</span>
                   {searchType === "agent" && " (codice agente)"}
+                  {searchType === "phone" && " (telefono)"}
                 </p>
               </div>
             )

@@ -50,7 +50,7 @@ export default function ContactsTablePrivate({
   isWhatsappBlock,
 }: ContactsTablePrivateProps) {
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [searchType, setSearchType] = useState<"email" | "agent">("email");
+  const [searchType, setSearchType] = useState<"email" | "agent" | "phone">("email");
   const [contacts, setContacts] = useState<Customer[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [isLoading, setIsLoading] = useState(true);
@@ -100,6 +100,8 @@ export default function ContactsTablePrivate({
     }
   }
 
+  const normalizePhone = (value?: string) => (value || "").replace(/\D+/g, "");
+
   async function SearchCustomer() {
     try {
       setIsSearching(true);
@@ -111,7 +113,7 @@ export default function ContactsTablePrivate({
         });
         console.log("Risultato ricerca per email:", response.data);
         setContacts(response.data);
-      } else {
+      } else if (searchType === "agent") {
         const response = await axios.get("/Contacts/GET/GetAllPrivate", {
           params: { isPremium }
         });
@@ -119,6 +121,17 @@ export default function ContactsTablePrivate({
           contact.Agente.toLowerCase().includes(searchTerm.toLowerCase())
         );
         console.log("Risultato ricerca per agente:", filteredContacts);
+        setContacts(filteredContacts);
+      } else {
+        const response = await axios.get("/Contacts/GET/GetAllPrivate", {
+          params: { isPremium }
+        });
+        const term = normalizePhone(searchTerm);
+        const filteredContacts = response.data.filter((contact: Customer) => {
+          const phone = normalizePhone(contact.CustomerPhone);
+          return term.length > 0 && phone.includes(term);
+        });
+        console.log("Risultato ricerca per telefono:", filteredContacts);
         setContacts(filteredContacts);
       }
     } catch (error) {
@@ -128,6 +141,22 @@ export default function ContactsTablePrivate({
       setIsSearching(false);
     }
   }
+
+  const cycleSearchType = () => {
+    if (searchType === "email") return setSearchType("agent");
+    if (searchType === "agent") return setSearchType("phone");
+    return setSearchType("email");
+  };
+
+  const searchPlaceholder =
+    searchType === "email"
+      ? "Cerca cliente per email..."
+      : searchType === "agent"
+      ? "Cerca cliente per codice agente..."
+      : "Cerca cliente per numero di telefono...";
+
+  const searchTypeLabel =
+    searchType === "email" ? "Per Email" : searchType === "agent" ? "Per Agente" : "Per Telefono";
 
   const getAgentName = (agentCode: string) => {
     const agent = agentList.find(a => a.code === agentCode);
@@ -227,16 +256,16 @@ export default function ContactsTablePrivate({
                 }}
                 value={searchTerm}
                 className="w-full"
-                placeholder={searchType === "email" ? "Cerca cliente per email..." : "Cerca cliente per codice agente..."}
+                placeholder={searchPlaceholder}
                 disabled={isLoading}
               />
               <Button
                 radius="full"
                 variant="flat"
-                onClick={() => setSearchType(searchType === "email" ? "agent" : "email")}
+                onClick={cycleSearchType}
                 className="min-w-[120px]"
               >
-                {searchType === "email" ? "Per Email" : "Per Agente"}
+                {searchTypeLabel}
               </Button>
             </div>
             <Button
@@ -426,6 +455,7 @@ export default function ContactsTablePrivate({
                   Nessun risultato corrisponde alla tua ricerca:{" "}
                   <span className="font-semibold italic">{searchTerm}</span>
                   {searchType === "agent" && " (codice agente)"}
+                  {searchType === "phone" && " (telefono)"}
                 </p>
               </div>
             )
