@@ -29,6 +29,7 @@ interface Customer {
   PolicyAccepted: boolean;
   Agente: string;
   Cap?: string;
+  isBlocked: boolean;
 }
 
 const columns = [
@@ -37,6 +38,7 @@ const columns = [
   { name: "Telefono Cliente", uid: "CustomerPhone" },
   { name: "Agente", uid: "Agente" },
   { name: "Cap", uid: "Cap" },
+  { name: "Bloccato", uid: "isBlocked" },
   { name: "Azioni", uid: "actions" },
 ];
 
@@ -50,7 +52,9 @@ export default function ContactsTablePrivate({
   isWhatsappBlock,
 }: ContactsTablePrivateProps) {
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [searchType, setSearchType] = useState<"email" | "agent" | "phone">("email");
+  const [searchType, setSearchType] = useState<"email" | "agent" | "phone">(
+    "email"
+  );
   const [contacts, setContacts] = useState<Customer[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [isLoading, setIsLoading] = useState(true);
@@ -73,7 +77,7 @@ export default function ContactsTablePrivate({
       CustomerPhone: "",
       Agente: "",
       PolicyAccepted: false,
- 
+      isBlocked: false,
     },
     open: false,
   });
@@ -106,25 +110,28 @@ export default function ContactsTablePrivate({
     try {
       setIsSearching(true);
       setError(null);
-      
+
       if (searchType === "email") {
-        const response = await axios.get("/Contacts/GET/SearchPrivateContactByEmail", {
-          params: { CustomerEmail: searchTerm, isPremium }
-        });
+        const response = await axios.get(
+          "/Contacts/GET/SearchPrivateContactByEmail",
+          {
+            params: { CustomerEmail: searchTerm, isPremium },
+          }
+        );
         console.log("Risultato ricerca per email:", response.data);
         setContacts(response.data);
       } else if (searchType === "agent") {
         const response = await axios.get("/Contacts/GET/GetAllPrivate", {
-          params: { isPremium }
+          params: { isPremium },
         });
-        const filteredContacts = response.data.filter((contact: Customer) => 
+        const filteredContacts = response.data.filter((contact: Customer) =>
           contact.Agente.toLowerCase().includes(searchTerm.toLowerCase())
         );
         console.log("Risultato ricerca per agente:", filteredContacts);
         setContacts(filteredContacts);
       } else {
         const response = await axios.get("/Contacts/GET/GetAllPrivate", {
-          params: { isPremium }
+          params: { isPremium },
         });
         const term = normalizePhone(searchTerm);
         const filteredContacts = response.data.filter((contact: Customer) => {
@@ -156,10 +163,14 @@ export default function ContactsTablePrivate({
       : "Cerca cliente per numero di telefono...";
 
   const searchTypeLabel =
-    searchType === "email" ? "Per Email" : searchType === "agent" ? "Per Agente" : "Per Telefono";
+    searchType === "email"
+      ? "Per Email"
+      : searchType === "agent"
+      ? "Per Agente"
+      : "Per Telefono";
 
   const getAgentName = (agentCode: string) => {
-    const agent = agentList.find(a => a.code === agentCode);
+    const agent = agentList.find((a) => a.code === agentCode);
     return agent ? agent.name : agentCode;
   };
 
@@ -194,6 +205,14 @@ export default function ContactsTablePrivate({
                     (#{customer.Agente})
                   </span>
                 )}
+              </p>
+            </div>
+          );
+        case "isBlocked":
+          return (
+            <div className="flex flex-col">
+              <p className="text-bold text-small capitalize">
+                {customer.isBlocked ? "Bloccato" : "Non bloccato"}
               </p>
             </div>
           );

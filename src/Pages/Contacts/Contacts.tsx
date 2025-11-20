@@ -120,6 +120,21 @@ export default function Contacts() {
     <main className="lg:ml-72 py-10">
       <div className="px-4 sm:px-6 lg:px-8 flex flex-col gap-5">
         <StatsList />
+        <label htmlFor="file-upload">
+          <div className="relative inline-block">
+            <Button color="primary" disabled={isLoading}>
+              {isLoading ? "Caricamento in corso..." : "Carica Contatti"}
+            </Button>
+            <input
+              id="file-upload"
+              type="file"
+              accept=".csv"
+              onChange={handleFileChange}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              disabled={isLoading}
+            />
+          </div>
+        </label>
         <div>
           <Tabs variant="underlined">
             <Tab
@@ -148,43 +163,14 @@ export default function Contacts() {
                 isWhatsappBlock={isWhatsappBlock.blocked}
               />
             </Tab>
-            {!isWhatsappBlock.blocked ? (
-              <Tab
-                key="fornitori"
-                title={
-                  <label htmlFor="file-upload">
-                    <div className="relative inline-block">
-                      <Button
-                        color="primary"
-                        disabled={isLoading || isWhatsappBlock.blocked}
-                      >
-                        {isLoading
-                          ? "Caricamento in corso..."
-                          : "Carica Contatti"}
-                      </Button>
-                      <input
-                        id="file-upload"
-                        type="file"
-                        accept=".csv"
-                        onChange={handleFileChange}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        disabled={isLoading || isWhatsappBlock.blocked}
-                      />
-                    </div>
-                  </label>
-                }
-              >
-                <ContactsTableCompany
-                  isPremium={isPremium}
-                  isWhatsappBlock={isWhatsappBlock.blocked}
-                />
-              </Tab>
-            ) : (
+
+            {isWhatsappBlock.blocked && (
               <Tab isDisabled>
                 <p>Limite di messaggi giornaliero raggiunto</p>
               </Tab>
             )}
           </Tabs>
+
           {totalContacts !== null && (
             <p className="mt-4 text-sm text-gray-500">
               Totale contatti caricati: {totalContacts}

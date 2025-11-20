@@ -19,6 +19,7 @@ export default function EditPrivateContactModal({
   const [surname, setSurname] = useState("");
   const [cap, setCap] = useState("");
   const [isPremium, setIsPremium] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -35,6 +36,7 @@ export default function EditPrivateContactModal({
           setSurname(res.data.CustomerSurname);
           setCap(res.data.Cap);
           setIsPremium(res.data.IsPremium);
+          setIsBlocked(res.data.isBlocked);
         });
     };
     fetchData();
@@ -50,6 +52,7 @@ export default function EditPrivateContactModal({
         CustomerSurname: surname,
         Cap: cap,
         IsPremium: isPremium,
+        IsBlocked: isBlocked,
       };
       await axios
         .post("/Contacts/POST/UpdateContact", {
@@ -106,6 +109,12 @@ export default function EditPrivateContactModal({
             onValueChange={() => setIsPremium(!isPremium)}
           >
             Cliente Premium
+          </Switch>
+          <Switch
+            isSelected={isBlocked}
+            onValueChange={() => setIsBlocked(!isBlocked)}
+          >
+            Bloccato
           </Switch>
           <Button onClick={handleUpdate}>Salva</Button>
         </div>
