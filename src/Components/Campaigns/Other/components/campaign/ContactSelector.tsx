@@ -34,6 +34,7 @@ interface Customer {
   name?: string; // Nome generico per entrambi i tipi
   email?: string; // Email generico per entrambi i tipi
   phone?: string; // Telefono generico per entrambi i tipi
+  isBlocked: boolean;
 }
 
 interface ContactSelectorProps {
@@ -347,7 +348,14 @@ export function ContactSelector({
           return contact.Agente === selectedAgent.code;
         });
 
-      return matchesCap && matchesAgent;
+      // Verifica se il contatto è bloccato
+      const isBlocked = contact.isBlocked;
+      if (isBlocked) {
+        console.log("Contatto bloccato:", contact.name);
+        return false;
+      }
+
+      return matchesCap && matchesAgent && !isBlocked;
     });
   };
 

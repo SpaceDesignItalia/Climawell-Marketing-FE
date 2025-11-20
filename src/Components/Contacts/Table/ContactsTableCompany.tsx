@@ -28,6 +28,7 @@ interface Company {
   CompanyPhone?: string;
   Agente: string;
   Cap?: string;
+  isBlocked: boolean;
 }
 
 const columns = [
@@ -36,6 +37,7 @@ const columns = [
   { name: "Telefono Azienda", uid: "CompanyPhone" },
   { name: "Agente", uid: "Agente" },
   { name: "Cap", uid: "Cap" },
+  { name: "Bloccato", uid: "isBlocked" },
   { name: "Azioni", uid: "actions" },
 ];
 
@@ -49,10 +51,12 @@ export default function ContactsTableCompany({
   isWhatsappBlock,
 }: ContactsTableCompanyProps) {
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [searchType, setSearchType] = useState<"email" | "agent" | "phone">("email");
+  const [searchType, setSearchType] = useState<"email" | "agent" | "phone">(
+    "email"
+  );
   const [companies, setCompany] = useState<Company[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState(15);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [updateContact, setUpdateContact] = useState(false);
@@ -67,6 +71,7 @@ export default function ContactsTableCompany({
       CompanyEmail: "",
       CompanyPhone: "",
       Agente: "",
+      isBlocked: false,
     },
     open: false,
   });
@@ -104,7 +109,6 @@ export default function ContactsTableCompany({
     try {
       setIsSearching(true);
       setError(null);
-      
       if (searchType === "email") {
         const response = await axios.get(
           "/Contacts/GET/SearchCompanyContactByEmail",
@@ -116,18 +120,18 @@ export default function ContactsTableCompany({
         setCompany(response.data);
       } else if (searchType === "agent") {
         const response = await axios.get("/Contacts/GET/GetAllCompany", {
-          params: { isPremium }
+          params: { isPremium },
         });
-        
-        const filteredCompanies = response.data.filter((company: Company) => 
+
+        const filteredCompanies = response.data.filter((company: Company) =>
           company.Agente.toLowerCase().includes(searchTerm.toLowerCase())
         );
-        
+
         console.log("Risultato ricerca per agente:", filteredCompanies);
         setCompany(filteredCompanies);
       } else {
         const response = await axios.get("/Contacts/GET/GetAllCompany", {
-          params: { isPremium }
+          params: { isPremium },
         });
 
         const term = normalizePhone(searchTerm);
@@ -161,10 +165,14 @@ export default function ContactsTableCompany({
       : "Cerca azienda per numero di telefono...";
 
   const searchTypeLabel =
-    searchType === "email" ? "Per Email" : searchType === "agent" ? "Per Agente" : "Per Telefono";
+    searchType === "email"
+      ? "Per Email"
+      : searchType === "agent"
+      ? "Per Agente"
+      : "Per Telefono";
 
   const getAgentName = (agentCode: string) => {
-    const agent = agentList.find(a => a.code === agentCode);
+    const agent = agentList.find((a) => a.code === agentCode);
     return agent ? agent.name : agentCode;
   };
 
@@ -199,6 +207,14 @@ export default function ContactsTableCompany({
                     (#{customer.Agente})
                   </span>
                 )}
+              </p>
+            </div>
+          );
+        case "isBlocked":
+          return (
+            <div className="flex flex-col">
+              <p className="text-bold text-small capitalize">
+                {customer.isBlocked ? "Bloccato" : "Non bloccato"}
               </p>
             </div>
           );
@@ -330,7 +346,7 @@ export default function ContactsTableCompany({
     searchTerm,
     isLoading,
     isSearching,
-    searchType
+    searchType,
   ]);
 
   const bottomContent = React.useMemo(() => {
